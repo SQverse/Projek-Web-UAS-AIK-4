@@ -11,7 +11,9 @@ class SholatSeeder extends Seeder
 {
     /**
      * Isi kategori (dewasa/anak), gerakan, dan bacaan dari data HPT.
-     * Satu sumber data disajikan untuk kedua mode (F-07, F-09).
+     * Satu sumber data melayani dua mode (F-07, F-09):
+     *  - Mode Dewasa menampilkan seluruh varian bacaan.
+     *  - Mode Anak hanya bacaan bertanda m='both' dengan terjemahan ringkas.
      */
     public function run(): void
     {
@@ -49,16 +51,27 @@ class SholatSeeder extends Seeder
                 // Ganti seluruh bacaan gerakan agar seeder idempoten.
                 $gerakan->bacaan()->delete();
 
-                foreach ($g['bacaan'] as $i => $b) {
+                $urutan = 0;
+                foreach ($g['bacaan'] as $b) {
+                    // Mode anak hanya menampilkan bacaan utama (m='both').
+                    if ($slug === 'anak' && ($b['m'] ?? 'both') !== 'both') {
+                        continue;
+                    }
+
+                    $urutan++;
+                    $terjemahan = $slug === 'anak'
+                        ? ($b['ta'] ?? $b['td'])
+                        : $b['td'];
+
                     Bacaan::create([
                         'gerakan_id' => $gerakan->id,
-                        'urutan' => $i + 1,
+                        'urutan' => $urutan,
                         'judul' => $b['judul'],
-                        'teks_arab' => $b['teks_arab'],
-                        'teks_latin' => $b['teks_latin'],
-                        'terjemahan' => $b['terjemahan'][$slug],
-                        'audio_url' => "/assets/audio/{$g['slug']}-".($i + 1).'.mp3',
-                        'sumber' => $b['sumber'],
+                        'teks_arab' => $b['ar'],
+                        'teks_latin' => $b['la'],
+                        'terjemahan' => $terjemahan,
+                        'audio_url' => "/assets/audio/{$g['slug']}-{$urutan}.mp3",
+                        'sumber' => $b['src'].' — HPT Muhammadiyah',
                     ]);
                 }
             }

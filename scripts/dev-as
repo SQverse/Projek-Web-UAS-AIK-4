@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+#
+# dev-as — Ganti identitas commit + SSH key sesuai jobdesk kelompok.
+#
+#   ./scripts/dev-as backend    -> commit sebagai Duta (Back-End)
+#   ./scripts/dev-as frontend   -> commit sebagai Bagas (Front-End)
+#   ./scripts/dev-as            -> tampilkan identitas aktif
+#
+# Kredit commit di GitHub ditentukan oleh EMAIL author commit.
+# SSH key menentukan akun mana yang dipakai saat push.
+#
+set -euo pipefail
+
+ROLE="${1:-}"
+
+# --- Definisi identitas anggota ---------------------------------------------
+# Duta Pasha Febrian — Back-End Developer (identitas bawaan laptop ini)
+DUTA_NAME="DxTz"
+DUTA_EMAIL="dxtz.dev@gmail.com"
+DUTA_KEY="$HOME/.ssh/id_ed25519"
+
+# Bagas Aryasatya Pratama — Front-End Developer
+# Isi BAGAS_EMAIL dengan email GitHub Bagas (asli terverifikasi atau
+# format privacy: <id>+<username>@users.noreply.github.com)
+BAGAS_NAME="Bagas Aryasatya Pratama"
+BAGAS_EMAIL="__ISI_EMAIL_BAGAS__"
+BAGAS_KEY="$HOME/.ssh/id_ed25519_bagas"
+# ----------------------------------------------------------------------------
+
+apply() {
+    local name="$1" email="$2" key="$3"
+    if [[ "$email" == __* ]]; then
+        echo "ERROR: email untuk role ini belum diisi. Edit scripts/dev-as (BAGAS_EMAIL)." >&2
+        exit 1
+    fi
+    if [[ ! -f "$key" ]]; then
+        echo "ERROR: SSH key tidak ditemukan: $key" >&2
+        exit 1
+    fi
+    git config user.name "$name"
+    git config user.email "$email"
+    git config core.sshCommand "ssh -i $key -o IdentitiesOnly=yes"
+    echo "Identitas commit : $name <$email>"
+    echo "SSH key          : $key"
+}
+
+case "$ROLE" in
+    backend|duta|be)
+        apply "$DUTA_NAME" "$DUTA_EMAIL" "$DUTA_KEY"
+        ;;
+    frontend|bagas|fe)
+        apply "$BAGAS_NAME" "$BAGAS_EMAIL" "$BAGAS_KEY"
+        ;;
+    "")
+        echo "Identitas aktif:"
+        echo "  user.name  = $(git config user.name || echo '-')"
+        echo "  user.email = $(git config user.email || echo '-')"
+        echo "  sshCommand = $(git config core.sshCommand || echo 'default')"
+        echo
+        echo "Usage: ./scripts/dev-as {backend|frontend}"
+        ;;
+    *)
+        echo "Role tidak dikenal: $ROLE" >&2
+        echo "Usage: ./scripts/dev-as {backend|frontend}" >&2
+        exit 1
+        ;;
+esac

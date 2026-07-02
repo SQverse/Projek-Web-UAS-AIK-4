@@ -23,7 +23,7 @@ DUTA_KEY="$HOME/.ssh/id_ed25519"
 # Isi BAGAS_EMAIL dengan email GitHub Bagas (asli terverifikasi atau
 # format privacy: <id>+<username>@users.noreply.github.com)
 BAGAS_NAME="Bagas Aryasatya Pratama"
-BAGAS_EMAIL="__ISI_EMAIL_BAGAS__"
+BAGAS_EMAIL="241220110@unmuhpnk.ac.id"
 BAGAS_KEY="$HOME/.ssh/id_ed25519_bagas"
 # ----------------------------------------------------------------------------
 
